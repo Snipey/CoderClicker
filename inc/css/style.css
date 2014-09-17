@@ -35,3 +35,6 @@ button{
     font-size:1.0em;
     font-weight:500;
 }
+table button.extinc{
+    width: 40px;
+}

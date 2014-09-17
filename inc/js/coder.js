@@ -5,23 +5,28 @@ function writeCode(number){
     document.getElementById("linesocode").innerHTML = linesOfCode;
 };
 
-var coders = 0;
+var buy = {
+    interns:0,
+    freelancers:0,
+    programmers:0,
+    coders:0
+};
 var autosaveCounter = 1;
-function buyCoder(){
-    var coderCost = Math.floor(10 * Math.pow(1.1,coders));     //works out the cost of this cursor
+function buyCoder(amount){
+    var coderCost = Math.floor(10 * Math.pow(1.1,buy.coders));     //works out the cost of this cursor
     if(linesOfCode >= coderCost){                                   //checks that the player can afford the cursor
-        coders = coders + 1;                                   //increases number of cursors
+        buy.coders = buy.coders + amount;                                   //increases number of cursors
         linesOfCode = linesOfCode - coderCost;                          //removes the cookies spent
-        document.getElementById('coders').innerHTML = coders;  //updates the number of cursors for the user
+        document.getElementById('coders').innerHTML = buy.coders;  //updates the number of cursors for the user
         document.getElementById('linesocode').innerHTML = linesOfCode;  //updates the number of cookies for the user
     };
-    var nextCost = Math.floor(10 * Math.pow(1.1,coders));       //works out the cost of the next cursor
+    var nextCost = Math.floor(10 * Math.pow(1.1,buy.coders));       //works out the cost of the next cursor
     document.getElementById('coderCost').innerHTML = nextCost;  //updates the cursor cost for the user
 };
 
 window.setInterval(function(){
 
-    writeCode(coders);
+    writeCode(buy.coders);
     //Autosave
         autosaveCounter += 1;
         if (autosaveCounter >= 60){ //Currently autosave is every minute. Might change to 5 mins in future.
@@ -37,7 +42,7 @@ function save(savetype){
     //Save files now also stored in localStorage, cookies relegated to backup
     saveVar = {
         linesOfCode:linesOfCode,
-        coders:coders
+        buy:buy
     }
     //set localstorage
     try {
@@ -58,6 +63,7 @@ function save(savetype){
         console.log('Savegame exists');
         if (savetype == 'auto'){
             console.log('Autosave');
+            _gaq.push(['_trackEvent', 'My Game', 'Save']);
         } else if (savetype == 'manual'){
             alert('Game Saved');
             console.log('Manual Save');
@@ -67,10 +73,58 @@ function save(savetype){
 
 // Load in saved data
 
-function load(){
-    var savegame = JSON.parse(localStorage.getItem("codeclick"));
-    if (savegame){
-        if (typeof savegame.linesOfCode !== "undefined") linesOfCode = savegame.linesOfCode;
-        if (typeof savegame.coders !== "undefined") coders = savegame.coders;
+function load(loadType){
+
+    var saveGame = {};
+
+    if (loadType == 'localStorage'){
+        //check for local storage
+        try {
+            string1 = localStorage.getItem('codeclick');
+        } catch(err) {
+            console.log('Cannot access localStorage - browser may not support localStorage, or storage may be corrupt')
+        }
+        if (string1){
+            saveGame = JSON.parse(string1);
+            //notify user
+            console.log('Loaded saved game from localStorage')
+        } else {
+            console.log('Unable to find variables in localStorage.')
+            return false;
+        }
     }
+
+    if (loadType == 'import'){
+        //take the import string, decompress and parse it
+        var compressed = document.getElementById('impexpField').value;
+        var decompressed = LZString.decompressFromBase64(compressed);
+        var revived = JSON.parse(decompressed);
+        //set variables to load from
+        saveGame = revived[0];
+        //notify user
+        alert('Imported saved game');
+        //close import/export dialog
+        //impexp();
+    }
+    //var savegame = JSON.parse(localStorage.getItem("codeclick"));
+
+    if (typeof saveGame.buy.coders !== "undefined") buy.coders = saveGame.buy.coders;
+    if (typeof saveGame.linesOfCode !== "undefined") linesOfCode = saveGame.linesOfCode;
+
+    updateData();
+    updateCost();
+}
+
+function reset(){
+    localStorage.removeItem("codeclick")
+}
+
+function updateData(){
+    document.getElementById('coders').innerHTML = buy.coders;
+    document.getElementById('linesocode').innerHTML = linesOfCode;
+}
+
+function updateCost(){
+    var coderNextCost = Math.floor(10 * Math.pow(1.1,buy.coders));       //works out the cost of the next cursor
+    document.getElementById('coderCost').innerHTML = coderNextCost;  //updates the cursor cost for the user
 }
