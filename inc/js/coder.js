@@ -63,7 +63,7 @@ function save(savetype){
         console.log('Savegame exists');
         if (savetype == 'auto'){
             console.log('Autosave');
-            _gaq.push(['_trackEvent', 'My Game', 'Save']);
+            ga('send', 'event', 'save', 'auto');
         } else if (savetype == 'manual'){
             alert('Game Saved');
             console.log('Manual Save');
